@@ -1,0 +1,20 @@
+.error {
+  color: red;
+}
+
+.subtitle-block {
+  margin: 9px;
+}
+
+.subtitle-block p {
+  margin: 2px 0;
+}
+
+.id {
+  margin-right: .5em;
+}
+
+.start-time::after {
+  content: "⟶";  /* (long rightward arrow) */
+  padding: 0 .3em;
+}
