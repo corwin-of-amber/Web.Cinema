@@ -4,5 +4,9 @@
   "main": "index.html",
   "scripts": {
     "start": "nw .&"
+  },
+  "dependencies": {
+    "file-size": "^1.0.0",
+    "webtorrent": "^0.98.0"
   }
 }

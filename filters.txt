@@ -1,0 +1,9 @@
+^Advertise your product
+OpenSubtitles
+^Download subtitles
+FLIXTOOLS
+gts-translation
+\bosdb\b
+\bOSDB\b
+GOM Player
+[Aa]ddic7ed

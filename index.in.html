@@ -1,4 +1,5 @@
 <script src="node_modules/nwjs-kremlin/reload.js"></script>
+<script>Reload.ignore(/^stream$/, /^tmp\//)</script>
 <%= jquery />
 
 <meta charset="utf-8">
@@ -12,13 +13,66 @@
     top: 20px;
     right: 20px;
   }
+
+  #vertical-split {
+    display: flex;
+    flex-flow: column nowrap;
+    height: 100%;
+    width: 100%;
+  }
+
+  #bottom-part {
+    overflow: auto;
+    flex-shrink: 1;
+  }
+
+  #history-pane {
+    position: absolute;
+    right: 10px;
+    border: 1px solid grey;
+    display: none;
+    padding-right: 60px;
+  }
 </style>
 
+<div id="vertical-split">
+
+<div id="top-part">
+
+<div id="upload-form">
 <input type="file" id="open">
 <button id="save">Save</button>
+</div>
 
-<div id="out"></div>
+<div id="torrent-search-form">
+<input id="query" type="text">
+<button id="search" type="submit">🔎</button>
+<select id="torrentz-select"></select>
+</div>
+
+<div id="torrent-download-form">
+<input type="text" id="torrent-hash">
+<button id="resume">▶︎</button>
+<button id="stop">×</button>
+<select id="file-select"></select>
+<button id="show-history">History</button>
+</div>
+
+</div>  <!-- /top-part -->
+
+<div id="bottom-part">
+
+<div id="log"></div>
+
+</div>  <!-- /bottom-part -->
+
+</div>
+
+<div id="history-pane">
+</div>
 
 <script src="logging.ls.js"></script>
 <script src="use-opensubtitles.ls.js"></script>
 <script src="use-webtorrent.ls.js"></script>
+<script src="torrent/search/torrentz.ls.js"></script>
+<script src="history.ls.js"></script>
