@@ -208,11 +208,3 @@ $ ->
   #$ '#search' .click!
 
 
-  # Download history
-
-  $ '#show-history' .click ->
-    $ '#history-pane'
-      ..empty!
-      ..append ($ '<ul>' .append hist.items.map -> $ '<li>' .text it.filename .click (ev) -> wlog it.infoHash)
-      ..offset top: $(@).0.getBoundingClientRect!bottom
-      ..toggle!

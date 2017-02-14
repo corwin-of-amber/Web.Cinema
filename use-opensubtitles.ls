@@ -2,6 +2,7 @@ fs = require 'fs'
 osapi = require('opensubtitles-api')
 libhash = require('opensubtitles-api/lib/hash')
 subtitles-parser = require('subtitles-parser')
+MemoryStream = require('memory-stream')
 
 
 o = new osapi({useragent: 'Popcorn time v1', username: '', password: '', ssl: false})
@@ -58,6 +59,49 @@ apply-filters = (srt) ->
     ! _filters.some (rexp) -> rexp.exec entry.text
 
 
-OpenSubtitles = {search, login-and-search, fetch}
+readFirstAndLast = (fn) ->
+  BLOCK_SIZE = 65536
+  result = {}
+  new Promise (fulfill, reject) ->
+    check = -> if result.block0? && result.blockn? then fulfill result
+    rs-block0 = fs.createReadStream(fn, start: 0, end: BLOCK_SIZE - 1)
+      block0 = new MemoryStream
+      ..pipe block0
+      ..on 'end' -> result.block0 = block0.toBuffer! ; console.log result.block0.length ; check!
+    fs.stat fn, (err, stat) ->
+      console.log err, stat
+      if err then werr err ; reject err
+      else
+        result.size = stat.size
+        rs-blockn = fs.createReadStream(fn, start: stat.size - BLOCK_SIZE, end: stat.size - 1)
+          blockn = new MemoryStream
+          ..pipe blockn
+          ..on 'end' -> result.blockn = blockn.toBuffer! ; console.log result.blockn.length ; check!
+
+
+$ ->
+  vid = '/Users/corwin/Downloads/Mr.Robot.Season.1.720p.BluRay.x264.ShAaNiG/Mr.Robot.S01E01.720p.BluRay.x264.ShAaNiG.mkv'
+  files = new FileList
+    ..append new File vid, vid
+  $ '#upload-form #open'
+    ..change ->
+      fn = @files.0.path
+      console.log "[opensubtitles] filename = '#{fn}'"
+      readFirstAndLast(fn).then (result) ->
+        console.log result
+        subhash = OpenSubtitles.hash-minimal result
+        wlog "[opensubtitles] subtitle hash = #{subhash}"
+        OpenSubtitles.login-and-search subhash
+        .then ->
+          wlog "[opensubtitles] #{vid.name}: subtitles['en'] = #{JSON.stringify it?.en}"
+          if it?.en?
+            OpenSubtitles.fetch it.en
+            .then ->
+              srt = './tmp/subs.srt'
+              wlog "[opensubtitles] downloaded '#srt'"
+    #..prop 'files' files
+
+
+OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, login-and-search, fetch}
 
 export OpenSubtitles, o, subtitles-hash-minimal, search, login-and-search
