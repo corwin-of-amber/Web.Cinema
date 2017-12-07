@@ -1,0 +1,13 @@
+{
+  "name": "web.cinema",
+  "description": "",
+  "main": "index.html",
+  "authors": [
+    "Shachar Itzhaky <corwin.amber@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/corwin-of-amber/Web.Cinema",
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}

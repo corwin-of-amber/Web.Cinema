@@ -1,5 +1,5 @@
 <script src="node_modules/nwjs-kremlin/reload.js"></script>
-<script>Reload.ignore(/^stream$/, /^tmp\//)</script>
+<script>Reload.ignore(/^tmp\//)</script>
 <%= jquery />
 
 <meta charset="utf-8">
@@ -33,6 +33,8 @@
     display: none;
     padding-right: 60px;
     background: rgba(255, 255, 255, 0.85);
+    max-height: calc(100% - 80px); /* @@@ 80px is some hard-coded height */
+    overflow: auto;
   }
 </style>
 
@@ -54,10 +56,11 @@
 <div id="torrent-download-form">
 <input type="text" id="torrent-hash">
 <button id="resume">▶︎</button>
+<button id="download">▼</button>
 <button id="stop">×</button>
-<select id="file-select"></select>
 <button id="history-show">History</button>
 <button id="history-add">+</button>
+<select id="file-select"></select>
 </div>
 
 </div>  <!-- /top-part -->

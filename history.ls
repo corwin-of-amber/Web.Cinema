@@ -42,9 +42,13 @@ class HistoryPane
   position-below: ($el) !->
     @$el.offset top: $el.0.getBoundingClientRect!bottom
 
+  is-visible: -> @$el.is(':visible')
+  hide: !-> @$el.hide!
+
   toggle: (below) !->
     if below? then @position-below below
     @$el.toggle!
+
 
 
 $ ->
@@ -56,6 +60,7 @@ $ ->
     hist-pane
       ..refresh!
       ..toggle /*below:*/ $(@)
+    false  # to prevent the $('body').click that follows
   $ '#history-add' .click ->
     hist
       ..add {torrent.name, torrent.infoHash, \
@@ -67,6 +72,10 @@ $ ->
     infoHash = $(ev.target).data('item').infoHash
     $ '#torrent-hash' .val infoHash
       ..trigger 'input'
+
+  $ 'body' .click (ev) ->
+    if hist-pane.is-visible! && $(ev.target).closest('#history-pane').length == 0
+      hist-pane.hide!
 
   window <<< {hist}
   /*

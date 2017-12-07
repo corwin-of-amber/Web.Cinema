@@ -1,6 +1,7 @@
 WebTorrent = require('webtorrent')
 MemoryStream = require('memory-stream')  # I also tried memory-streams but it didn't work well
 parse-torrent = require('parse-torrent')
+fs = require('fs')
 child_process = require('child_process')
 path = require('path')
 file-size = require('file-size')
@@ -46,7 +47,7 @@ runDownload = (torrentId, options={}) ->
         ..val vid.name
     if torrent.options.metadata-only
       client.remove torrentId
-    else
+    else if torrent.options.selected-filename != '*'
       torrent.deselect(0, torrent.pieces.length - 1, false)  # download nothing yet!
       # see https://github.com/feross/webtorrent/issues/164
 
@@ -56,14 +57,16 @@ runDownload = (torrentId, options={}) ->
       client.remove torrentId
     else
       $ '#statusbar' .text "downloaded: 0   progress: 0%"
-      vid = find-file-by-name(torrent, torrent.options.selected-filename) || \
-            find-video-file(torrent)
+      vid = if torrent.options.selected-filename != '*'
+              find-file-by-name(torrent, torrent.options.selected-filename) || \
+              find-video-file(torrent)
       if vid?
+        out = {subs: './tmp/subs.srt', video: './tmp/stream'}  # @@@ hard-coded
         torrent.vid = vid
         readFirstAndLastBlocks vid .then (result) ->
           console.log result
-          if torrent.options.first-and-last-only
-            client.remove torrentId
+          #if torrent.options.first-and-last-only
+          #  client.remove torrentId
           subhash = subtitles-hash-minimal result
           wlog "[torrent] subtitle hash = #{subhash}"
           OpenSubtitles.login-and-search subhash
@@ -72,7 +75,7 @@ runDownload = (torrentId, options={}) ->
             if it?.en?
               OpenSubtitles.fetch it.en
               .then ->
-                torrent.subtitles-filename = './tmp/subs.srt'  # @@@ hard-coded
+                torrent.subtitles-filename = out.subs
                 torrent.subtitles-thread-done = true
             else
               torrent.subtitles-thread-done = true
@@ -80,8 +83,11 @@ runDownload = (torrentId, options={}) ->
             torrent.subtitles-thread-done = true
         if !torrent.options.first-and-last-only
           vid.select!
-          vid.createReadStream().pipe fs.createWriteStream('./tmp/stream')
+          fs.createWriteStream(out.video)
+            vid.createReadStream().pipe ..
+            ..on 'open' -> readMoovSpeculatively vid, out.video .then -> torrent.moov-thread-done = true
           torrent.request-play = true
+          check-if-ready-to-play!
 
       #setTimeout (-> if client.get torrentId then client.remove torrentId), 10000
 
@@ -93,16 +99,26 @@ runDownload = (torrentId, options={}) ->
       downloaded = torrent.vid.downloaded
       progress = downloaded / torrent.vid.length
       $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}" ##progress: #{progress}"
-      if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done
-        torrent.request-play = false
-        args = []
-        if torrent.subtitles-filename?
-          args.push '--sub-file' path.resolve(torrent.subtitles-filename)
-        try
-          cmd = "open -a vlc ./tmp/stream --args #{args.join ' '}"
-          child_process.exec cmd
-        catch e
-          werr e
+      check-if-ready-to-play!
+      
+    else
+      downloaded = torrent.downloaded
+      progress = downloaded / torrent.length
+      $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}"
+
+  check-if-ready-to-play = ->
+    console.log '[torrent] check ready to play'
+    downloaded = torrent.vid.downloaded
+    if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done && torrent.moov-thread-done
+      torrent.request-play = false
+      args = []
+      if torrent.subtitles-filename?
+        args.push '--sub-file' path.resolve(torrent.subtitles-filename)
+      try
+        cmd = "open -a vlc ./tmp/stream --args #{args.join ' '}"
+        child_process.exec cmd
+      catch e
+        werr e
 
   window.torrent = torrent
 
@@ -140,11 +156,20 @@ readFirstAndLastBlocks = (torrent-file) ->
    rs-block0 = torrent-file.createReadStream {start: 0, end: BLOCK_SIZE - 1}
      block0 = new MemoryStream
      ..pipe block0
-     ..on 'end' -> result.block0 = block0.toBuffer! ; console.log block0.toBuffer!length ; check!
+     ..on 'end' -> result.block0 = block0.toBuffer! ; check!
    rs-blockn = torrent-file.createReadStream {start: n - BLOCK_SIZE, end: n - 1}
      blockn = new MemoryStream
      ..pipe blockn
-     ..on 'end' -> result.blockn = blockn.toBuffer! ; console.log blockn.toBuffer!length ; check!
+     ..on 'end' -> result.blockn = blockn.toBuffer! ; check!
+
+readMoovSpeculatively = (torrent-file, out-filename) ->
+  MOOV_SIZE = 6e6
+  n = torrent-file.length
+  new Promise (fulfill, reject) ->
+    torrent-file.createReadStream {start: n - MOOV_SIZE, end: n - 1}
+      ..pipe fs.createWriteStream(out-filename, flags: 'r+', start: n - MOOV_SIZE) #devnull()
+      ..on 'end' -> fulfill {}
+
 
 $ ->
   $ '<div>' .attr('id', 'statusbar') .insert-after '#torrent-download-form'
@@ -164,6 +189,14 @@ $ ->
       metadata-only: false
       first-and-last-only: false
       selected-filename: $ '#torrent-download-form #file-select' .val!
+
+  $ '#download' .click ->
+    stop-all-downloads!
+    $ '#torrent-download-form #file-select' .val '(all)'
+    runDownload ($ '#torrent-hash' .val!), do
+      metadata-only: false
+      first-and-last-only: false
+      selected-filename: "*"
 
   $ '#stop' .click -> stop-all-downloads!
 
@@ -206,5 +239,3 @@ $ ->
   # test
   #$ '#query' .val "big bang s10e10"
   #$ '#search' .click!
-
-

@@ -1,8 +1,8 @@
 
 
 Torrentz =
-  BASE_URL_ALTS: ['http://torrentz.ht', 'http://torrentz2.eu']
-  BASE_URL: 'http://torrentz.ht'
+  BASE_URL_ALTS: ['http://torrentz2.eu', 'http://torrentz.ht']
+  BASE_URL: 'http://torrentz2.eu'
   uri: (query) ->
     "#{@BASE_URL}/search?f=#{encodeURI(query.replace(/ /g,'+'))}"
   search: (query) ->

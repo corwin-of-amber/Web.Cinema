@@ -17,18 +17,22 @@ subtitles-hash-minimal = ({size, block0, blockn}) ->
   checksum
 
 
+cached = {}
+
+
 login-and-search = (hash) ->
+  if (v = cached[hash]) then return Promise.resolve(v)
   o.login!
   .catch -> werr "error: #{it}"
   .then ->
     wlog "[opensubtitles] logged in [token='#{it.token}']"
     search hash
 
-hash = 'c91f84bd348be402'# '494fe6666f7424f0'
-
 search = (hash) ->
+  if (v = cached[hash]) then return Promise.resolve(v)
   o.search {hash}
-  .then ->
+  .catch -> werr "error: #{it}"
+  .then -> cached[hash] =
     if [k for k of it].length == 0
       wlog "[opensubtitles] no subtitles"
       void
@@ -37,13 +41,13 @@ search = (hash) ->
       console.log it
       it
 
-fetch = (subtitles-record) ->
+fetch = (subtitles-record, save-as-filename) ->
   $.ajax subtitles-record.url
   .always (res, status) ->
     wlog "[opensubtitles] ajax #{status}"
     if status == 'success'
       res = postprocess res
-      fs.writeFileSync('./tmp/subs.srt', res)
+      fs.writeFileSync(save-as-filename, res)
 
 postprocess = (res) ->
   srt = subtitles-parser.fromSrt res

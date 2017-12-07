@@ -1,8 +1,8 @@
 
-TAGS = "pseudo|bdrip|dvdrip|dvdscr|bluray|1080p|720p|shaanig|h[.]265|x264|mkv|mp4|avi"
+TAGS = "pseudo|bdrip|dvdrip|dvdscr|bluray|1080p|720p|shaanig|h[.]265|x26[45]|mkv|mp4|avi|dimension|hdtv|ettv|lol|eztv|web-dl|webrip|tbs"
 
 filter-tags = (name) ->
-  re = //([\[\].,\s] (#TAGS) \b (|[\[\].,\s]))+[\[\].,]?//ig
+  re = //([\[\].,-\s] (#TAGS) \b (|[\[\].,-\s]))+[\[\].,-]?//ig
   tags = []
   caption: normalize(name.replace(re, -> tags.push it; ' '))
   tags: tags

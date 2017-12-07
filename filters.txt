@@ -7,3 +7,6 @@ gts-translation
 \bOSDB\b
 GOM Player
 [Aa]ddic7ed
+\bsync, corrected\b
+\bVPN[.]ht\b
+FlixTor

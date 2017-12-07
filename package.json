@@ -1,12 +1,19 @@
 {
-  "name": "subtitles",
+  "name": "Web.Cinema",
+  "description": "",
   "version": "0.0.1",
   "main": "index.html",
   "scripts": {
     "start": "nw .&"
   },
   "dependencies": {
+    "dev-null": "^0.1.1",
     "file-size": "^1.0.0",
+    "memory-stream": "^0.0.3",
+    "opensubtitles-api": "^3.3.0",
+    "subtitles-parser": "^0.0.2",
     "webtorrent": "^0.98.0"
-  }
+  },
+  "repository": "github.com",
+  "license": "MIT"
 }
