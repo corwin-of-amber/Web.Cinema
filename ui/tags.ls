@@ -1,5 +1,5 @@
 
-TAGS = "pseudo|bdrip|dvdrip|dvdscr|bluray|1080p|720p|shaanig|h[.]265|x26[45]|mkv|mp4|avi|dimension|hdtv|ettv|lol|eztv|web-dl|webrip|tbs"
+TAGS = "pseudo|bdrip|dvdrip|dvdscr|bluray|1080p|720p|shaanig|h[.]265|x26[45]|mkv|mp4|avi|dimension|hdtv|ettv|lol|eztv|web-dl|webrip|tbs|aac|kylar|newstudio[.]tv|xvid|w4f|avs|nf|dd5[.]1|sneaky|brrip|titler"
 
 filter-tags = (name) ->
   re = //([\[\].,-\s] (#TAGS) \b (|[\[\].,-\s]))+[\[\].,-]?//ig
@@ -11,13 +11,6 @@ filter-tags = (name) ->
 normalize = ->
   it.replace(/^\s*|\s(?=\s)|\s*$/g, "")
 
-$ ->
-  test-cases =
-   * "[pseudo] Rick and Morty S01E03 Anatomy Park [BDRip] [1080p] [h.265].mkv"
-   * "House.of.Cards.S04E10.720p.BluRay.x264.ShAaNiG.mkv"
-
-  for i in test-cases
-    console.log filter-tags i
 
 
 

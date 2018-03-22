@@ -1,6 +1,8 @@
 ^Advertise your product
 OpenSubtitles
 ^Download subtitles
+^Please rate this subtitle
+^Stay tuned? for scenes
 FLIXTOOLS
 gts-translation
 \bosdb\b
@@ -10,3 +12,4 @@ GOM Player
 \bsync, corrected\b
 \bVPN[.]ht\b
 FlixTor
+tvaddons

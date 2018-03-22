@@ -97,11 +97,11 @@ $ ->
         wlog "[opensubtitles] subtitle hash = #{subhash}"
         OpenSubtitles.login-and-search subhash
         .then ->
-          wlog "[opensubtitles] #{vid.name}: subtitles['en'] = #{JSON.stringify it?.en}"
+          wlog "[opensubtitles] #{fn}: subtitles['en'] = #{JSON.stringify it?.en}"
           if it?.en?
-            OpenSubtitles.fetch it.en
+            srt = './tmp/subs.srt'
+            OpenSubtitles.fetch it.en, srt
             .then ->
-              srt = './tmp/subs.srt'
               wlog "[opensubtitles] downloaded '#srt'"
     #..prop 'files' files
 

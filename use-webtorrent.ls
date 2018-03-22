@@ -73,14 +73,17 @@ runDownload = (torrentId, options={}) ->
           .then ->
             wlog "[torrent] #{vid.name}: subtitles['en'] = #{JSON.stringify it?.en}"
             if it?.en?
-              OpenSubtitles.fetch it.en
+              OpenSubtitles.fetch it.en, out.subs
               .then ->
                 torrent.subtitles-filename = out.subs
                 torrent.subtitles-thread-done = true
+                check-if-ready-to-play!
             else
               torrent.subtitles-thread-done = true
+              check-if-ready-to-play!
           .catch ->
             torrent.subtitles-thread-done = true
+            check-if-ready-to-play!
         if !torrent.options.first-and-last-only
           vid.select!
           fs.createWriteStream(out.video)
@@ -100,16 +103,16 @@ runDownload = (torrentId, options={}) ->
       progress = downloaded / torrent.vid.length
       $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}" ##progress: #{progress}"
       check-if-ready-to-play!
-      
+
     else
       downloaded = torrent.downloaded
       progress = downloaded / torrent.length
       $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}"
 
   check-if-ready-to-play = ->
-    console.log '[torrent] check ready to play'
     downloaded = torrent.vid.downloaded
     if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done && torrent.moov-thread-done
+      console.log '[torrent] ready to play'
       torrent.request-play = false
       args = []
       if torrent.subtitles-filename?

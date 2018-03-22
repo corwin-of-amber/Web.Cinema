@@ -24,10 +24,14 @@ class Hist
         ..data 'item' item
 
   get-caption: (item) ->
-    item.caption ? Tags.filter-tags(item.filename).caption
+    item.caption ? Tags.filter-tags(@get-title(item)).caption
 
   get-tags: (item) ->
-    item.tags ? Tags.filter-tags(item.filename).tags
+    item.tags ? Tags.filter-tags(@get-title(item)).tags
+
+  get-title: (item) ->
+    if item.filename && item.filename != '*' then item.filename
+    else item.name
 
 
 class HistoryPane

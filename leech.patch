@@ -1,0 +1,11 @@
+--- node_modules/webtorrent/lib/torrent.js	2018-02-18 03:15:42.000000000 +0200
++++ node_modules/webtorrent/lib/torrent.js.leech	2018-03-18 17:15:13.000000000 +0200
+@@ -1067,7 +1067,7 @@
+   })
+ 
+   wire.once('interested', function () {
+-    wire.unchoke()
++    //wire.unchoke()
+   })
+ 
+   wire.once('close', function () {
