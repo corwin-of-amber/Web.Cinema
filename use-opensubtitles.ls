@@ -49,6 +49,15 @@ fetch = (subtitles-record, save-as-filename) ->
       res = postprocess res
       fs.writeFileSync(save-as-filename, res)
 
+login-search-and-fetch = (hash, langcode='en', save-as-filename) ->
+  login-and-search hash
+  .then ->
+    if (record = it?[langcode])?
+      wlog "[opensubtitles] subtitles['#{langcode}'] = #{JSON.stringify record}"
+      fetch record, save-as-filename
+    else
+      throw new Error("not found")
+
 postprocess = (res) ->
   srt = subtitles-parser.fromSrt res
   srt = apply-filters srt
@@ -95,17 +104,14 @@ $ ->
         console.log result
         subhash = OpenSubtitles.hash-minimal result
         wlog "[opensubtitles] subtitle hash = #{subhash}"
-        OpenSubtitles.login-and-search subhash
+        srt = './tmp/subs.srt'
+        OpenSubtitles.login-search-and-fetch subhash, 'en', srt
         .then ->
-          wlog "[opensubtitles] #{fn}: subtitles['en'] = #{JSON.stringify it?.en}"
-          if it?.en?
-            srt = './tmp/subs.srt'
-            OpenSubtitles.fetch it.en, srt
-            .then ->
-              wlog "[opensubtitles] downloaded '#srt'"
+          wlog "[opensubtitles] downloaded '#srt'"
+        .catch ->
     #..prop 'files' files
 
 
-OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, login-and-search, fetch}
+OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, login-and-search, fetch, login-search-and-fetch}
 
 export OpenSubtitles, o, subtitles-hash-minimal, search, login-and-search

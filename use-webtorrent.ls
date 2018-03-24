@@ -39,8 +39,8 @@ runDownload = (torrentId, options={}) ->
     #  wlog "[torrent] #{f.name} (#{f.length})"
     $ '#file-select'
       ..empty!
-      for f in torrent.files
-        ..append ($ '<option>' .text f.name)
+      for fn in torrent.files.map (.name) .sort!
+        ..append ($ '<option>' .text fn)
       if options.selected-filename?
         ..val options.selected-filename
       else if (vid = find-video-file torrent)?
@@ -50,16 +50,19 @@ runDownload = (torrentId, options={}) ->
     else if torrent.options.selected-filename != '*'
       torrent.deselect(0, torrent.pieces.length - 1, false)  # download nothing yet!
       # see https://github.com/feross/webtorrent/issues/164
+      torrent.vid = find-file-by-name(torrent, torrent.options.selected-filename) || \
+                    find-video-file(torrent)
+      progress!
+    else
+      torrent.vid = void
 
   torrent.once 'ready' !->
     wlog "[torrent] ready (#{torrent.numPeers} peers)"
     if torrent.options.metadata-only
       client.remove torrentId
     else
-      $ '#statusbar' .text "downloaded: 0   progress: 0%"
-      vid = if torrent.options.selected-filename != '*'
-              find-file-by-name(torrent, torrent.options.selected-filename) || \
-              find-video-file(torrent)
+      progress!
+      vid = torrent.vid
       if vid?
         out = {subs: './tmp/subs.srt', video: './tmp/stream'}  # @@@ hard-coded
         torrent.vid = vid
@@ -69,21 +72,14 @@ runDownload = (torrentId, options={}) ->
           #  client.remove torrentId
           subhash = subtitles-hash-minimal result
           wlog "[torrent] subtitle hash = #{subhash}"
-          OpenSubtitles.login-and-search subhash
+
+          OpenSubtitles.login-search-and-fetch subhash, 'en', out.subs
           .then ->
-            wlog "[torrent] #{vid.name}: subtitles['en'] = #{JSON.stringify it?.en}"
-            if it?.en?
-              OpenSubtitles.fetch it.en, out.subs
-              .then ->
-                torrent.subtitles-filename = out.subs
-                torrent.subtitles-thread-done = true
-                check-if-ready-to-play!
-            else
-              torrent.subtitles-thread-done = true
-              check-if-ready-to-play!
-          .catch ->
+            torrent.subtitles-filename = out.subs
+          .finally ->
             torrent.subtitles-thread-done = true
             check-if-ready-to-play!
+
         if !torrent.options.first-and-last-only
           vid.select!
           fs.createWriteStream(out.video)
@@ -94,10 +90,10 @@ runDownload = (torrentId, options={}) ->
 
       #setTimeout (-> if client.get torrentId then client.remove torrentId), 10000
 
-  torrent.on 'upload' !->
-    $ '#statusbar' .text "uploaded: #{torrent.uploaded}"
+  torrent.on 'upload' !-> progress!
+  torrent.on 'download' !-> progress!
 
-  torrent.on 'download' !->
+  progress = !->
     if torrent.vid?
       downloaded = torrent.vid.downloaded
       progress = downloaded / torrent.vid.length
@@ -238,6 +234,14 @@ $ ->
     ev.preventDefault!
     $ '#torrent-hash' .val $(ev.target).attr 'href'
     .trigger 'input'
+
+  $ '#history-pane' .on 'picked' (ev, item) ->
+    stop-all-downloads!
+    $ '#torrent-hash' .val item.infoHash
+    runDownload item.infoHash, do #($ '#torrent-hash' .val!), do
+      metadata-only: false
+      first-and-last-only: true
+      selected-filename: item.filename ? "*"
 
   # test
   #$ '#query' .val "big bang s10e10"

@@ -74,8 +74,10 @@ $ ->
 
   $ '#history-pane' .on 'click', 'li' (ev) ->
     infoHash = $(ev.target).data('item').infoHash
-    $ '#torrent-hash' .val infoHash
-      ..trigger 'input'
+    #$ '#torrent-hash' .val infoHash
+    #  ..trigger 'input'
+    $ '#history-pane' .trigger 'picked' $(ev.target).data('item')
+    hist-pane.hide!
 
   $ 'body' .click (ev) ->
     if hist-pane.is-visible! && $(ev.target).closest('#history-pane').length == 0

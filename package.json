@@ -10,7 +10,7 @@
     "dev-null": "^0.1.1",
     "file-size": "^1.0.0",
     "memory-stream": "^0.0.3",
-    "opensubtitles-api": "^3.3.0",
+    "opensubtitles-api": "^4.0.0",
     "subtitles-parser": "^0.0.2",
     "webtorrent": "^0.98.24"
   },
