@@ -48,6 +48,7 @@ fetch = (subtitles-record, save-as-filename) ->
     if status == 'success'
       res = postprocess res
       fs.writeFileSync(save-as-filename, res)
+      wlog "[opensubtitles] fetched as '#{save-as-filename}'"
 
 login-search-and-fetch = (hash, langcode='en', save-as-filename) ->
   login-and-search hash
@@ -106,8 +107,6 @@ $ ->
         wlog "[opensubtitles] subtitle hash = #{subhash}"
         srt = './tmp/subs.srt'
         OpenSubtitles.login-search-and-fetch subhash, 'en', srt
-        .then ->
-          wlog "[opensubtitles] downloaded '#srt'"
         .catch ->
     #..prop 'files' files
 

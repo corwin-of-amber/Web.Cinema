@@ -85,7 +85,7 @@ runDownload = (torrentId, options={}) ->
           fs.createWriteStream(out.video)
             vid.createReadStream().pipe ..
             ..on 'open' -> readMoovSpeculatively vid, out.video .then -> torrent.moov-thread-done = true
-          torrent.request-play = true
+          torrent.request-play = options.request-play ? false
           check-if-ready-to-play!
 
       #setTimeout (-> if client.get torrentId then client.remove torrentId), 10000
@@ -97,15 +97,14 @@ runDownload = (torrentId, options={}) ->
     if torrent.vid?
       downloaded = torrent.vid.downloaded
       progress = downloaded / torrent.vid.length
-      $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}" ##progress: #{progress}"
       check-if-ready-to-play!
-
     else
       downloaded = torrent.downloaded
       progress = downloaded / torrent.length
-      $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)   uploaded: #{torrent.uploaded}"
+    $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)  |  uploaded: #{file-size(torrent.uploaded).human!}"
 
   check-if-ready-to-play = ->
+    if !(torrent.ready && torrent.vid?) then return
     downloaded = torrent.vid.downloaded
     if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done && torrent.moov-thread-done
       console.log '[torrent] ready to play'
@@ -171,9 +170,6 @@ readMoovSpeculatively = (torrent-file, out-filename) ->
 
 
 $ ->
-  $ '<div>' .attr('id', 'statusbar') .insert-after '#torrent-download-form'
-
-$ ->
   $ '#torrent-hash' .on \input ->
     stop-all-downloads!
     runDownload ($ '#torrent-hash' .val!)
@@ -187,9 +183,18 @@ $ ->
     runDownload ($ '#torrent-hash' .val!), do
       metadata-only: false
       first-and-last-only: false
+      request-play: true
       selected-filename: $ '#torrent-download-form #file-select' .val!
 
   $ '#download' .click ->
+    stop-all-downloads!
+    sel = $ '#torrent-download-form #file-select' .val!
+    runDownload ($ '#torrent-hash' .val!), do
+      metadata-only: false
+      first-and-last-only: false
+      selected-filename: if sel == "(all)" then "*" else sel
+
+  $ '#download-all' .click ->
     stop-all-downloads!
     $ '#torrent-download-form #file-select' .val '(all)'
     runDownload ($ '#torrent-hash' .val!), do
