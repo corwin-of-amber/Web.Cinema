@@ -65,7 +65,7 @@ runDownload = (torrentId, options={}) ->
       vid = torrent.vid
       if vid?
         out = {subs: './tmp/subs.srt', video: './tmp/stream'}  # @@@ hard-coded
-        torrent.vid = vid
+        #torrent.vid = vid
         readFirstAndLastBlocks vid .then (result) ->
           console.log result
           #if torrent.options.first-and-last-only
@@ -73,7 +73,7 @@ runDownload = (torrentId, options={}) ->
           subhash = subtitles-hash-minimal result
           wlog "[torrent] subtitle hash = #{subhash}"
 
-          OpenSubtitles.login-search-and-fetch subhash, 'en', out.subs
+          OpenSubtitles.login-search-and-fetch subhash, vid.name, 'en', out.subs
           .then ->
             torrent.subtitles-filename = out.subs
           .finally ->
@@ -221,19 +221,20 @@ $ ->
   $ '#torrent-hash' .val test
   #.trigger 'input'
 
+  search-engines = {PirateBay, Torrentz}
+
   $ '#torrentz-select'
     ..empty!
-    for url in Torrentz.BASE_URL_ALTS
-      ..append ($ '<option>' .text url)
-    ..change ->
-      Torrentz.BASE_URL = $('#torrentz-select').val!
+    ..append ($ '<option>' .text 'thepiratebay.org' .val 'PirateBay')
+    ..append ($ '<option>' .text 'torrentz2.eu' .val 'Torrentz')
 
   $ '#query' .keypress (ev) ->
     if ev.keyCode == 13
       $(this).parent!find('[type=submit]').click!
 
   $ '#search' .click ->
-    Torrentz.search $('#query').val!
+    search-engines[$('#torrentz-select').val!]
+      ..search $('#query').val!
 
   $ '#log' .on 'click', 'a', (ev) ->
     ev.preventDefault!

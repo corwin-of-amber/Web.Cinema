@@ -13,3 +13,4 @@ GOM Player
 \bVPN[.]ht\b
 FlixTor
 tvaddons
+AmericasCardroom

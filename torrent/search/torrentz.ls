@@ -8,9 +8,12 @@ Torrentz =
   search: (query) ->
     wlog "[torrentz] Searching '#{query}'"
     $.ajax @uri(query)
-    .always (res, status) ->
+    .always (res, status) ~>
+      if res.status == 503   # CloudFlare nonsense
+        nw.Window.open @BASE_URL, {inject_js_start: 'inject.js'}
+        return
       wlog "[torrentz] ajax #{status}"
-      window.tz = h = $ '<body>' .append $.parseHTML(res)
+      h = $ '<body>' .append $.parseHTML(res)
       items =
         for dl in h.find('div.results dl')
           #console.log dl
@@ -26,4 +29,13 @@ Torrentz =
       wlog [$('<span>').text("[torrentz] Search results"), $('<ul>').append(items)]
 
 
-export Torrentz
+CloudFlare =
+  remove-cookies: ->
+    chrome.cookies.getAll {}, (cs) ->
+      for cookie in cs
+        chrome.cookies.remove url: "http://#{cookie.domain}", name: cookie.name
+
+
+window.onmessage = -> console.log "window message: #{it}"
+
+export Torrentz, CloudFlare

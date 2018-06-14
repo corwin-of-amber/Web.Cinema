@@ -20,17 +20,17 @@ subtitles-hash-minimal = ({size, block0, blockn}) ->
 cached = {}
 
 
-login-and-search = (hash) ->
+login-and-search = (hash, filename) ->
   if (v = cached[hash]) then return Promise.resolve(v)
   o.login!
   .catch -> werr "error: #{it}"
   .then ->
     wlog "[opensubtitles] logged in [token='#{it.token}']"
-    search hash
+    search hash, filename
 
-search = (hash) ->
+search = (hash, filename) ->
   if (v = cached[hash]) then return Promise.resolve(v)
-  o.search {hash}
+  o.search {hash, filename}
   .catch -> werr "error: #{it}"
   .then -> cached[hash] =
     if [k for k of it].length == 0
@@ -50,8 +50,8 @@ fetch = (subtitles-record, save-as-filename) ->
       fs.writeFileSync(save-as-filename, res)
       wlog "[opensubtitles] fetched as '#{save-as-filename}'"
 
-login-search-and-fetch = (hash, langcode='en', save-as-filename) ->
-  login-and-search hash
+login-search-and-fetch = (hash, filename, langcode='en', save-as-filename) ->
+  login-and-search hash, filename
   .then ->
     if (record = it?[langcode])?
       wlog "[opensubtitles] subtitles['#{langcode}'] = #{JSON.stringify record}"
@@ -106,8 +106,9 @@ $ ->
         subhash = OpenSubtitles.hash-minimal result
         wlog "[opensubtitles] subtitle hash = #{subhash}"
         srt = './tmp/subs.srt'
-        OpenSubtitles.login-search-and-fetch subhash, 'en', srt
+        OpenSubtitles.login-search-and-fetch subhash, fn, 'en', srt
         .catch ->
+          console.log "[opensubtitles] #{it}"
     #..prop 'files' files
 
 
