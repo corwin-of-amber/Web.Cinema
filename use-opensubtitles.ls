@@ -94,10 +94,7 @@ readFirstAndLast = (fn) ->
 
 
 $ ->
-  vid = '/Users/corwin/Downloads/Mr.Robot.Season.1.720p.BluRay.x264.ShAaNiG/Mr.Robot.S01E01.720p.BluRay.x264.ShAaNiG.mkv'
-  files = new FileList
-    ..append new File vid, vid
-  $ '#upload-form #open'
+  $ '#local-form #open'
     ..change ->
       fn = @files.0.path
       console.log "[opensubtitles] filename = '#{fn}'"
@@ -110,6 +107,10 @@ $ ->
         .catch ->
           console.log "[opensubtitles] #{it}"
     #..prop 'files' files
+  $ '#local-form #play' .click ->
+    fn = $('#local-form #open').0.files.0.path
+    srt = './tmp/subs.srt'
+    video-player.play fn, srt
 
 
 OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, login-and-search, fetch, login-search-and-fetch}

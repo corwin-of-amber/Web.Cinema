@@ -109,14 +109,7 @@ runDownload = (torrentId, options={}) ->
     if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done && torrent.moov-thread-done
       console.log '[torrent] ready to play'
       torrent.request-play = false
-      args = []
-      if torrent.subtitles-filename?
-        args.push '--sub-file' path.resolve(torrent.subtitles-filename)
-      try
-        cmd = "open -a vlc ./tmp/stream --args #{args.join ' '}"
-        child_process.exec cmd
-      catch e
-        werr e
+      video-player.play './tmp/stream', torrent.subtitles-filename
 
   window.torrent = torrent
 
