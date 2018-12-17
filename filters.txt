@@ -14,3 +14,5 @@ GOM Player
 FlixTor
 tvaddons
 AmericasCardroom
+AMERICASCARDROOM
+PROJECT WARLOCK

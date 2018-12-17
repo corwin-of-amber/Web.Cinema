@@ -11,7 +11,7 @@ class MPVVideoPlayer
     if subtitles-filename?
       args.push "--sub-file=#{path.resolve(subtitles-filename)}"
     args.unshift vid-filename
-    child_process.execFile @EXE, args
+    child_process.spawn @EXE, args, {stdio: 'ignore'}
       ..on 'error' -> werr it
 
 
@@ -24,7 +24,7 @@ class IINAVideoPlayer
     if subtitles-filename?
       args.push "--mpv-sub-file=#{path.resolve(subtitles-filename)}"
     args.unshift vid-filename
-    child_process.execFile @EXE, args
+    child_process.spawn @EXE, args
       ..on 'error' -> werr it
 
 

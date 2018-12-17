@@ -4,7 +4,6 @@ log-container = 'body'
 $ ->
   if (out = $ '#log').length
     log-container := out
-    out.dblclick -> out.empty!
 
 with_ = ($el, contents) ->
   if $.isArray(contents) || contents instanceof $

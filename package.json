@@ -12,7 +12,8 @@
     "memory-stream": "^0.0.3",
     "opensubtitles-api": "^4.0.0",
     "subtitles-parser": "^0.0.2",
-    "webtorrent": "^0.98.24"
+    "webtorrent": "^0.102.4",
+    "thepiratebay": "^1.4.7"
   },
   "repository": "github.com",
   "license": "MIT"
