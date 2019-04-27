@@ -156,9 +156,10 @@ readFirstAndLastBlocks = (torrent-file) ->
 readMoovSpeculatively = (torrent-file, out-filename) ->
   MOOV_SIZE = 6e6
   n = torrent-file.length
+  start = Math.max(0, n - MOOV_SIZE)
   new Promise (fulfill, reject) ->
-    torrent-file.createReadStream {start: n - MOOV_SIZE, end: n - 1}
-      ..pipe fs.createWriteStream(out-filename, flags: 'r+', start: n - MOOV_SIZE) #devnull()
+    torrent-file.createReadStream {start: start, end: n - 1}
+      ..pipe fs.createWriteStream(out-filename, flags: 'r+', start: start) #devnull()
       ..on 'end' -> fulfill {}
 
 
