@@ -27,7 +27,7 @@ runDownload = (torrentId, options={}) ->
 
   torrent = client.add torrentId, {path: "/tmp/Web.Cinema"}
 
-  configureOptions torrent, options
+  torrent.options = {} <<<< DEFAULT_OPTIONS <<<< options
 
   torrent.on 'infoHash' !->
     wlog "[torrent] infoHash"
@@ -41,8 +41,8 @@ runDownload = (torrentId, options={}) ->
       ..empty!
       for fn in torrent.files.map (.name) .sort!
         ..append ($ '<option>' .text fn)
-      if options.selected-filename?
-        ..val options.selected-filename
+      if torrent.options.selected-filename?
+        ..val torrent.options.selected-filename
       else if (vid = find-video-file torrent)?
         ..val vid.name
     if torrent.options.metadata-only
@@ -64,34 +64,44 @@ runDownload = (torrentId, options={}) ->
       progress!
       vid = torrent.vid
       if vid?
-        out = {subs: './tmp/subs.srt', video: './tmp/stream'}  # @@@ hard-coded
-        #torrent.vid = vid
-        readFirstAndLastBlocks vid .then (result) ->
-          console.log result
-          #if torrent.options.first-and-last-only
-          #  client.remove torrentId
-          subhash = subtitles-hash-minimal result
-          wlog "[torrent] subtitle hash = #{subhash}"
+        out = {subs: path.join(torrent.path, 'stream.srt'), \
+               video: path.join(torrent.path, 'stream')}  # @@@ hard-coded
 
-          OpenSubtitles.login-search-and-fetch subhash, vid.name, 'en', out.subs
-          .then ->
-            torrent.subtitles-filename = out.subs
-          .finally ->
-            torrent.subtitles-thread-done = true
-            check-if-ready-to-play!
+        torrent.video-filename = out.video
+
+        #torrent.vid = vid
+        if torrent.options.search-subtitles
+          readFirstAndLastBlocks vid .then (result) ->
+            console.log result
+            #if torrent.options.first-and-last-only
+            #  client.remove torrentId
+            subhash = subtitles-hash-minimal result
+            wlog "[torrent] subtitle hash = #{subhash}"
+
+            OpenSubtitles.login-search-and-fetch subhash, vid.name, 'en', out.subs
+            .then ->
+              torrent.subtitles-filename = out.subs
+            .finally ->
+              torrent.subtitles-thread-done = true
+              check-if-ready-to-play!
 
         if !torrent.options.first-and-last-only
-          vid.select!
-          fs.createWriteStream(out.video)
-            vid.createReadStream().pipe ..
-            ..on 'open' -> readMoovSpeculatively vid, out.video .then -> torrent.moov-thread-done = true
-          torrent.request-play = options.request-play ? false
+          start!
           check-if-ready-to-play!
 
       #setTimeout (-> if client.get torrentId then client.remove torrentId), 10000
 
   torrent.on 'upload' !-> progress!
   torrent.on 'download' !-> progress!
+
+  detect-streaming = (vid) -> !vid.name.match( /[.]mp4$/ )
+
+  start = !->
+    if (vid = torrent.vid)?
+      vid.select!
+      torrent.supports-streaming = detect-streaming vid
+        if !..
+          download-to-file vid, torrent.video-filename
 
   progress = !->
     if torrent.vid?
@@ -103,13 +113,40 @@ runDownload = (torrentId, options={}) ->
       progress = downloaded / torrent.length
     $ '#statusbar' .text "downloaded: #{file-size(downloaded).human!} (#{Math.round(progress * 100)}%)  |  uploaded: #{file-size(torrent.uploaded).human!}"
 
+  download-to-file = (vid, filename) !->
+    fs.createWriteStream(filename)
+      vid.createReadStream().pipe ..
+      ..on 'open' -> readMoovSpeculatively vid, filename .then -> torrent.moov-thread-done = true
+
   check-if-ready-to-play = ->
     if !(torrent.ready && torrent.vid?) then return
     downloaded = torrent.vid.downloaded
-    if torrent.request-play && downloaded > 6000000 && torrent.subtitles-thread-done && torrent.moov-thread-done
+    #console.log 'downloaded', downloaded, torrent.subtitles-thread-done
+    if torrent.options.request-play && downloaded > 6000000 && torrent.subtitles-thread-done \
+         && (torrent.supports-streaming || torrent.moov-thread-done)
       console.log '[torrent] ready to play'
-      torrent.request-play = false
-      video-player.play './tmp/stream', torrent.subtitles-filename
+      torrent.options.request-play = false
+      play!
+    
+  play = ->
+    try
+      if torrent.vid.progress >= 1
+        filename = path.join(torrent.path, torrent.vid.path)
+        video-player.play filename, torrent.subtitles-filename
+      else if torrent.supports-streaming
+        torrent.stream = stream = torrent.vid.createReadStream!
+        video-player.stream stream, torrent.subtitles-filename
+      else
+        filename = torrent.video-filename
+        video-player.play filename, torrent.subtitles-filename
+    catch e
+      console.error e
+
+  torrent.play = ->
+    torrent.options.request-play = true
+    torrent.options.first-and-last-only = false
+    start!
+    check-if-ready-to-play!
 
   window.torrent = torrent
 
@@ -119,13 +156,11 @@ stop-all-downloads = ->
       client.remove it #($ '#torrent-hash' .val!)
 
 
-# auxiliary function
-configureOptions = (torrent, options) ->
-  torrent.options =
-    first-and-last-only: options.first-and-last-only ? true
-    metadata-only: options.metadata-only ? false
-    selected-filename: options.selected-filename
-  torrent.request-play = false
+DEFAULT_OPTIONS =
+  metadata-only: true
+  first-and-last-only: true
+  request-play: false
+  search-subtitles: true
 
 
 find-video-file = (torrent) ->
@@ -172,13 +207,16 @@ $ ->
     if ev.keyCode == 13
       $(this).trigger \input
 
-  $ '#resume' .click ->
-    stop-all-downloads!
-    runDownload ($ '#torrent-hash' .val!), do
-      metadata-only: false
-      first-and-last-only: false
-      request-play: true
-      selected-filename: $ '#torrent-download-form #file-select' .val!
+  $ '#torrent-download-form #play' .click ->
+    if torrent.destroyed
+      stop-all-downloads!
+      runDownload ($ '#torrent-hash' .val!), do
+        metadata-only: false
+        first-and-last-only: false
+        request-play: true
+        selected-filename: $ '#torrent-download-form #file-select' .val!
+    else
+      torrent.play!
 
   $ '#download' .click ->
     stop-all-downloads!

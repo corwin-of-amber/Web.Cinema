@@ -15,6 +15,15 @@ class MPVVideoPlayer
     child_process.spawn @EXE, args, {stdio: 'ignore'}
       ..on 'error' -> werr it
 
+  stream: (vid-stream, subtitles-filename) ->
+    args = ['--force-seekable=yes']
+    if subtitles-filename?
+      args.push "--sub-file=#{path.resolve(subtitles-filename)}"
+    args.unshift '-'
+    child_process.spawn @EXE, args, {stdio: ['pipe', 'inherit', 'inherit']}
+      ..on 'error' -> werr it
+      vid-stream.pipe ..stdin
+
 
 class IINAVideoPlayer
 
