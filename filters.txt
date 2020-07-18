@@ -16,3 +16,4 @@ tvaddons
 AmericasCardroom
 AMERICASCARDROOM
 PROJECT WARLOCK
+\b[Rr]ipped [Bb]y\b
