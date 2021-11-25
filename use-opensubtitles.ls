@@ -41,6 +41,10 @@ search = (hash, filename) ->
       console.log it
       it
 
+search-freetext = (query) ->>
+  if !o.credentials.status.token then await o.login!
+  o.api.SearchSubtitles(o.credentials.status.token, [{query}])
+
 fetch = (subtitles-record, save-as-filename) ->
   $.ajax subtitles-record.url
   .always (res, status) ->
@@ -113,6 +117,6 @@ $ ->
     video-player.play fn, srt
 
 
-OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, login-and-search, fetch, login-search-and-fetch}
+OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, search-freetext, login-and-search, fetch, login-search-and-fetch}
 
 export OpenSubtitles, o, subtitles-hash-minimal, search, login-and-search

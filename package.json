@@ -9,12 +9,16 @@
   "dependencies": {
     "dev-null": "^0.1.1",
     "file-size": "^1.0.0",
+    "jquery": "^3.5.1",
     "memory-stream": "^0.0.3",
     "opensubtitles-api": "^4.0.0",
     "subtitles-parser": "^0.0.2",
-    "webtorrent": "^0.102.4",
-    "thepiratebay": "^1.4.7"
+    "utp-native": "^2.2.2",
+    "webtorrent": "^0.112.0"
   },
   "repository": "github.com",
-  "license": "MIT"
+  "license": "MIT",
+  "app": {
+    "icon": "ui/img/Icon.icns"
+  }
 }

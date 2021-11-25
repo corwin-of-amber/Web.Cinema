@@ -133,10 +133,12 @@ runDownload = (torrentId, options={}) ->
       if torrent.vid.progress >= 1
         filename = path.join(torrent.path, torrent.vid.path)
         video-player.play filename, torrent.subtitles-filename
-      else if torrent.supports-streaming
+      else if torrent.supports-streaming && video-player.supports-streaming
         torrent.stream = stream = torrent.vid.createReadStream!
         video-player.stream stream, torrent.subtitles-filename
       else
+        if torrent.supports-streaming
+          download-to-file torrent.vid, torrent.video-filename
         filename = torrent.video-filename
         video-player.play filename, torrent.subtitles-filename
     catch e

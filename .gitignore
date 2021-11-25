@@ -5,3 +5,6 @@ tmp
 *.ls.js
 index.html
 .*.sw?
+*.app
+*.Icns
+/build

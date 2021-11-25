@@ -6,6 +6,7 @@ require! child_process
 class MPVVideoPlayer
 
   EXE: '/opt/local/bin/mpv'
+  supports-streaming: true
 
   play: (vid-filename, subtitles-filename) ->
     args = []
@@ -34,6 +35,7 @@ class IINAVideoPlayer
     if subtitles-filename?
       args.push "--mpv-sub-file=#{path.resolve(subtitles-filename)}"
     args.unshift vid-filename
+    console.log @EXE, args
     child_process.spawn @EXE, args
       ..on 'error' -> werr it
 
@@ -49,7 +51,7 @@ class VLCVideoPlayer
       ..on 'error' -> werr it
 
 
-video-player = new MPVVideoPlayer
+video-player = new IINAVideoPlayer
 
 
-export video-player
+export MPVVideoPlayer, IINAVideoPlayer, VLCVideoPlayer, video-player
