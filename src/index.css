@@ -1,0 +1,10 @@
+body {
+    margin-top: 0;
+}
+
+.main-panel {
+    position: sticky;
+    top: 0px;
+    background: #fffe;
+    padding: 9px 0;
+}

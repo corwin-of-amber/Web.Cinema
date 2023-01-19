@@ -2,7 +2,11 @@
   "name": "Web.Cinema",
   "description": "",
   "version": "0.0.1",
-  "main": "index.html",
+  "main": "build/kremlin/index.html",
+  "browser": {
+    "mass-confusion": true,
+    "utp-native": true
+  },
   "scripts": {
     "start": "nw .&"
   },
@@ -14,9 +18,12 @@
     "opensubtitles-api": "^4.0.0",
     "subtitles-parser": "^0.0.2",
     "utp-native": "^2.2.2",
-    "webtorrent": "^0.112.0"
+    "vue": "^3.2.45",
+    "webtorrent": "^1.9.7"
   },
-  "repository": "github.com",
+  "devDependencies": {
+    "@types/node": "^18.11.18"
+  },
   "license": "MIT",
   "app": {
     "icon": "ui/img/Icon.icns"

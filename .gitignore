@@ -3,8 +3,8 @@ bower_components
 tmp
 .DS_Store
 *.ls.js
-index.html
 .*.sw?
 *.app
 *.Icns
 /build
+/_npmlink
