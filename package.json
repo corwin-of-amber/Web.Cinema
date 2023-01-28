@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "dev-null": "^0.1.1",
+    "dexie": "^3.2.2",
     "file-size": "^1.0.0",
     "jquery": "^3.5.1",
     "memory-stream": "^0.0.3",

@@ -20,7 +20,7 @@ class TorrentClient extends EventEmitter {
         window.addEventListener('beforeunload', () => this.wt.destroy());
     }
 
-    runDownload(torrentId: string, options={}) {
+    open(torrentId: string, options={}) {
         let torrent = this.wt.add(torrentId, this.wtOptions);
         torrent.on('infoHash', () => wlog('[torrent] infoHash'));
         torrent.on('metadata', () => {
@@ -29,6 +29,7 @@ class TorrentClient extends EventEmitter {
         });
         torrent.once('ready', () => {
             wlog(`[torrent] ready; ${torrent.numPeers} peers`)
+            this.pause();
         });
         torrent.on('upload', () => this.progress());
         torrent.on('download', () => this.progress());
@@ -54,10 +55,19 @@ class TorrentClient extends EventEmitter {
         }
     }
 
+    pause() {
+        if (this.torrent)
+            this.torrent.deselect(0, this.torrent.pieces.length - 1);
+    }
+
     stop() {
         for (let torrent of this.wt.torrents) {
             this.wt.remove(torrent);
         }
+    }
+
+    getFile(filename: string) {
+        return this.torrent.files.find(f => f.name === filename);
     }
 
     download(torrentFile: any, filename: string) {
