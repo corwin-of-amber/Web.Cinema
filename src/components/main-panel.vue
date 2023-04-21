@@ -35,8 +35,12 @@ export default {
             this.$emit('nav:action', action);
         },
         histSelect(action: any) {
+            this.history.show = false;
             console.log(action);
             this.$emit('history:select', action);
+        },
+        gotoFile(filename: string) {
+            this.$refs.nav.selectedFile = filename;
         }
     },
     components: { StatusBar, NavBar, SearchBar, HistoryPane }

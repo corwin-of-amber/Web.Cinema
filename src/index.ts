@@ -16,31 +16,56 @@ Object.assign(window, {PirateBay, dexie});
 function main() {
     let c = new TorrentClient;
 
+    let uiState: any = {};
+
     Object.assign(window, {c});
 
     let panel = Vue.createApp(MainPanel, {
         onSearch(ev: {query: string}) { PirateBay.search(ev.query); },
-        'onHistory:select': (action) => c.open(action.entry.infoHash),
-        'onNav:action': (action) => console.log('nav:action', action)
+        'onHistory:select': (action) => { uiState.openAction = action; c.open(action.entry.infoHash) },
+        'onNav:action': (action) => {
+            console.log('nav:action', action);
+            switch (action.type) {
+                case 'download':
+                    c.download(selectedFile(), '/tmp/Web.Cinema/stream');
+                    break;
+                case 'history-add':
+                    let entry = selectedEntry();
+                    if (entry)
+                        panel.history.entries.unshift(entry);
+                    break;
+            }
+        }
     }).mount('body') as any;
 
     function selectedFile() {
-        return c.getFile(panel.selectedFile);
+        if (c.torrent && panel.selectedFile)
+            return c.getFile(panel.selectedFile);
+    }
+
+    function selectedEntry() {
+        if (c.torrent && panel.selectedFile)
+            return {
+                infoHash: c.torrent.infoHash,
+                name: c.torrent.name,
+                filename: panel.selectedFile
+            };
     }
 
     Object.assign(window, {panel, selectedFile});
 
     c.on('metadata', ev => {
         panel.files = ev.filenames;
+        if (uiState.openAction) {
+            panel.gotoFile(uiState.openAction.entry.filename);
+        }
     });
     c.on('progress', ev => {
         panel.numPeers = c.torrent?.numPeers;
-        panel.progress = ev;
+        let file = selectedFile();
+        panel.progress = file ? {...ev, downloaded: c.fileProgress(file)} : ev;
+        
     });
-    /* ({dowloaded: d, uploaded: u}) => {
-        document.querySelector('#statusbar')
-            .textContent = `downloaded: ${d.human} (${Math.round(d.progress * 100)}%)  |  uploaded: ${u.human}`;
-    });*/
 
     let historyStore = new LocalStore('history');
     panel.history.entries = historyStore.load();

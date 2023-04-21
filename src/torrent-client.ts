@@ -20,7 +20,7 @@ class TorrentClient extends EventEmitter {
         window.addEventListener('beforeunload', () => this.wt.destroy());
     }
 
-    open(torrentId: string, options={}) {
+    open(torrentId: string, options: TorrentClient.OpenOptions = {}) {
         let torrent = this.wt.add(torrentId, this.wtOptions);
         torrent.on('infoHash', () => wlog('[torrent] infoHash'));
         torrent.on('metadata', () => {
@@ -39,20 +39,30 @@ class TorrentClient extends EventEmitter {
 
     progress() {
         if (this.torrent) {
-            let downloaded = this.torrent.downloaded,
-                percentage = downloaded / this.torrent.length
             this.emit('progress', {
-                downloaded: {
-                    bytes: downloaded,
-                    human: fileSize(downloaded).human(),
-                    percentage
-                },
-                uploaded: {
-                    bytes: this.torrent.uploaded,
-                    human: fileSize(this.torrent.uploaded).human()
-                }
+                downloaded: this._downloadProgress(this.torrent),
+                uploaded: this._uploadProgress(this.torrent)
             });      
         }
+    }
+
+    fileProgress(file: {length: number, downloaded: number}) {
+        return this._downloadProgress(file);
+    }
+
+    _downloadProgress(thing: {length: number, downloaded: number}) {
+        return {
+            bytes: thing.downloaded,
+            human: fileSize(thing.downloaded).human(),
+            percentage: thing.downloaded / thing.length
+        };
+    }
+
+    _uploadProgress(thing: {uploaded: number}) {
+        return {
+            bytes: thing.uploaded,
+            human: fileSize(thing.uploaded).human()
+        };
     }
 
     pause() {
@@ -87,6 +97,14 @@ class TorrentClient extends EventEmitter {
         return new Promise((resolve, reject) =>
             pipe.on('end', () => resolve({})));      
     }
+}
+
+
+namespace TorrentClient {
+
+    export type OpenOptions = {
+    }
+
 }
 
 
