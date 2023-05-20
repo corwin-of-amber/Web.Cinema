@@ -7,7 +7,7 @@
 
 <script lang="ts">
 export default {
-    data: () => ({query: 'ted lasso'}),
+    data: () => ({query: ''}),
     methods: {
         doSearch() {
             if (this.query)

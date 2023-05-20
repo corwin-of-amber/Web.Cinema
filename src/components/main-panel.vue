@@ -4,7 +4,7 @@
         <nav-bar ref="nav" :files="files" @action="navAction"/>
         <status-bar ref="status" :num-peers="numPeers" :progress="progress"/>
         <history-pane ref="history" v-if="history.show" :entries="history.entries" :style="pos(history.pos)"
-            @select="histSelect"/>
+            @select="histSelect" @blur="histClose"/>
     </div>
 </template>
 
@@ -15,7 +15,7 @@ import StatusBar from './status-bar.vue';
 import HistoryPane from './history-pane.vue';
 
 export default {
-    data: () => ({files: [], numPeers: 0, progress: {downloaded: {}, uploaded: {}},
+    data: () => ({files: [], numPeers: 0, progress: undefined,
                   history: {entries: [], show: false, pos: {x: 0, y: 0}}}),
     computed: {
         selectedFile() {
@@ -38,6 +38,10 @@ export default {
             this.history.show = false;
             console.log(action);
             this.$emit('history:select', action);
+        },
+        histClose() {
+            requestAnimationFrame(() =>  /* usual race between close and 'history-show' action */
+                this.history.show = false);
         },
         gotoFile(filename: string) {
             this.$refs.nav.selectedFile = filename;

@@ -25,10 +25,11 @@ class TorrentClient extends EventEmitter {
         torrent.on('infoHash', () => wlog('[torrent] infoHash'));
         torrent.on('metadata', () => {
             wlog(`[torrent] ${torrent.numPeers} peers`);
-            this.emit('metadata', {filenames: torrent.files.map(f => f.name)})
+            this.emit('metadata', {torrentId, filenames: torrent.files.map(f => f.name)});
         });
         torrent.once('ready', () => {
             wlog(`[torrent] ready; ${torrent.numPeers} peers`)
+            this.emit('ready', {torrentId});
             this.pause();
         });
         torrent.on('upload', () => this.progress());
@@ -81,21 +82,25 @@ class TorrentClient extends EventEmitter {
     }
 
     download(torrentFile: any, filename: string) {
-        let out = fs.createWriteStream(filename);
-        torrentFile.createReadStream().pipe(out)
-            .on('open', () => this.readMoov(torrentFile, filename));
+        let out = fs.createWriteStream(filename),
+            pipe = torrentFile.createReadStream().pipe(out),
+            readMoov =
+                pipe.on('open', () => this.readMoov(torrentFile, filename));
+        return {
+            ready: readMoov /* @todo also wait for sufficient data from the beginning */
+        };
     }
 
     readMoov(torrentFile: any, outFilename: string) {
         let n = torrentFile.length,
             start = Math.max(0, n - this.options.moovSize);
-        
+
         let pipe =
           torrentFile.createReadStream({start: start, end: n - 1})
             .pipe(fs.createWriteStream(outFilename, {flags: 'r+', start: start}));
 
         return new Promise((resolve, reject) =>
-            pipe.on('end', () => resolve({})));      
+            pipe.on('finish', () => { console.log('readMoov: done'); resolve({}); }));      
     }
 }
 

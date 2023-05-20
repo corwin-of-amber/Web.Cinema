@@ -1,10 +1,12 @@
 <template>
     <div class="status-bar">
         {{ numPeers }} peers
+        <span v-if="progress">
         |
         downloaded: {{d.human}} ({{Math.round(d.percentage * 100)}}%)  
         |
         uploaded: {{u.human}}
+        </span>
     </div>
 </template>
 

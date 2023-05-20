@@ -1,6 +1,8 @@
 import * as Vue from 'vue';
-import dexie from 'dexie';
+//import dexie from 'dexie';
 import { TorrentClient } from './torrent-client';
+// @ts-ignore
+import { IINAVideoPlayer } from './playback/video-player.ls';
 // @ts-ignore
 import { PirateBay } from './search/piratebay.ls';
 
@@ -10,7 +12,7 @@ import MainPanel from './components/main-panel.vue';
 import './index.css';
 import { LocalStore } from './infra/store';
 
-Object.assign(window, {PirateBay, dexie});
+Object.assign(window, {PirateBay, IINAVideoPlayer});
 
 
 function main() {
@@ -26,13 +28,16 @@ function main() {
         'onNav:action': (action) => {
             console.log('nav:action', action);
             switch (action.type) {
+                case 'play':
                 case 'download':
                     c.download(selectedFile(), '/tmp/Web.Cinema/stream');
                     break;
+                case 'stop':
+                    c.stop();
                 case 'history-add':
                     let entry = selectedEntry();
                     if (entry)
-                        panel.history.entries.unshift(entry);
+                        addToHistory(entry);
                     break;
             }
         }
@@ -59,7 +64,12 @@ function main() {
         if (uiState.openAction) {
             panel.gotoFile(uiState.openAction.entry.filename);
         }
+        // Set cursor to "wait" until checking existing files end (UI may hang... :/)
+        document.querySelector('html').style.cursor = 'wait';
     });
+    c.on('ready', ev => {
+        document.querySelector('html').style.cursor = 'unset';
+    })
     c.on('progress', ev => {
         panel.numPeers = c.torrent?.numPeers;
         let file = selectedFile();
@@ -69,6 +79,14 @@ function main() {
 
     let historyStore = new LocalStore('history');
     panel.history.entries = historyStore.load();
+
+    function store() {
+        historyStore.save(panel.history.entries);
+    }
+    function addToHistory(entry) {
+        panel.history.entries.unshift(entry);
+        store();
+    }
 
     Object.assign(window, {historyStore});
 
