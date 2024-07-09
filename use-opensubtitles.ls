@@ -80,8 +80,9 @@ apply-filters = (srt) ->
 readFirstAndLast = (fn) ->
   BLOCK_SIZE = 65536
   result = {}
+  window.result = result
   new Promise (fulfill, reject) ->
-    check = -> if result.block0? && result.blockn? then fulfill result
+    check = -> console.log result; if result.block0? && result.blockn? then fulfill result
     rs-block0 = fs.createReadStream(fn, start: 0, end: BLOCK_SIZE - 1)
       block0 = new MemoryStream
       ..pipe block0
@@ -97,6 +98,18 @@ readFirstAndLast = (fn) ->
           ..on 'end' -> result.blockn = blockn.toBuffer! ; console.log result.blockn.length ; check!
 
 
+download-for-file = (fn) ->
+  console.log "[opensubtitles] filename = '#{fn}'"
+  readFirstAndLast(fn).then (result) ->
+    console.log result
+    subhash = OpenSubtitles.hash-minimal result
+    wlog "[opensubtitles] subtitle hash = #{subhash}"
+    srt = './tmp/subs.srt'
+    OpenSubtitles.login-search-and-fetch subhash, fn, 'en', srt
+    .catch ->
+      console.log "[opensubtitles] #{it}"
+
+/*
 $ ->
   $ '#local-form #open'
     ..change ->
@@ -115,8 +128,8 @@ $ ->
     fn = $('#local-form #open').0.files.0.path
     srt = './tmp/subs.srt'
     video-player.play fn, srt
-
+*/
 
 OpenSubtitles = {hash-minimal: subtitles-hash-minimal, search, search-freetext, login-and-search, fetch, login-search-and-fetch}
 
-export OpenSubtitles, o, subtitles-hash-minimal, search, login-and-search
+export OpenSubtitles, o, subtitles-hash-minimal, search, login-and-search, download-for-file

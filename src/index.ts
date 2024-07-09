@@ -7,12 +7,15 @@ import { IINAVideoPlayer } from './playback/video-player.ls';
 import { PirateBay } from './search/piratebay.ls';
 
 // @ts-ignore
+import * as OpenSubtitles from './subtitles/opensubtitles';
+
+// @ts-ignore
 import MainPanel from './components/main-panel.vue';
 
 import './index.css';
 import { LocalStore } from './infra/store';
 
-Object.assign(window, {PirateBay, IINAVideoPlayer});
+Object.assign(window, {PirateBay, IINAVideoPlayer, OpenSubtitles});
 
 
 function main() {
@@ -29,11 +32,19 @@ function main() {
             console.log('nav:action', action);
             switch (action.type) {
                 case 'play':
+                    panel.ready = undefined;
+                    c.downloadStream(selectedFile(), '/tmp/Web.Cinema/stream')
+                        .ready.then(() => panel.ready = 'ready');
+                    break;
                 case 'download':
-                    c.download(selectedFile(), '/tmp/Web.Cinema/stream');
+                    c.download(selectedFile());
                     break;
                 case 'stop':
                     c.stop();
+                    break;
+                case 'movie':
+                    new IINAVideoPlayer().play('/tmp/Web.Cinema/stream');
+                    break;
                 case 'history-add':
                     let entry = selectedEntry();
                     if (entry)

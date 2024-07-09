@@ -9,8 +9,9 @@
         <button @click="action($event, 'download')" class="btn download">▼</button>
         <button @click="action($event, 'download-all')" class="btn download-all">▼<sup>*</sup></button>
         <button @click="action($event, 'stop')" class="btn stop">■</button>
+        <button @click="action($event, 'movie')" class="btn movie">📽️</button>
         <span class="sep"></span>
-        <button @click="action($event, 'history-show')" class="history-show">History</button>
+        <button @mousedown="action($event, 'history-show')" class="history-show">History</button>
         <button @click="action($event, 'history-add')" class="history-add">+</button>
     </div>
 </template>

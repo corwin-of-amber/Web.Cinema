@@ -1,7 +1,7 @@
 require! {
   'jquery': $
   'file-size': file-size
-  '../logging.ls': {wlog}
+  '../logging.ls': {wlog, werr}
 }
 
 PirateBay =

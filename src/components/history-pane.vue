@@ -13,7 +13,8 @@ import { Tags } from '../filename-tags.ls';
 export default {
     props: ['entries'],
     mounted() {
-        this.$el.focus();
+        /* focus in order to trigger `blur` when clicking outside */
+        requestAnimationFrame(() => this.$el.focus());
     },
     methods: {
         formatName(s: string) {

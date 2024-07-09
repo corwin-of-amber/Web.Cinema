@@ -81,11 +81,16 @@ class TorrentClient extends EventEmitter {
         return this.torrent.files.find(f => f.name === filename);
     }
 
-    download(torrentFile: any, filename: string) {
+    download(torrentFile: any) {
+        torrentFile.select();
+    }
+
+    downloadStream(torrentFile: any, filename: string) {
+        try { fs.unlinkSync(filename); } catch { }
         let out = fs.createWriteStream(filename),
             pipe = torrentFile.createReadStream().pipe(out),
-            readMoov =
-                pipe.on('open', () => this.readMoov(torrentFile, filename));
+            readMoov = new Promise(resolve =>
+                pipe.on('open', () => resolve(this.readMoov(torrentFile, filename))));
         return {
             ready: readMoov /* @todo also wait for sufficient data from the beginning */
         };
