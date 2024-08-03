@@ -20,10 +20,11 @@
     "subtitles-parser": "^0.0.2",
     "utp-native": "^2.2.2",
     "vue": "^3.2.45",
-    "webtorrent": "^1.9.7"
+    "webtorrent": "^2.4.15"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18"
+    "@types/node": "^18.11.18",
+    "@types/webtorrent": "^0.109.8"
   },
   "license": "MIT",
   "app": {

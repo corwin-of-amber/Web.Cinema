@@ -1,22 +1,22 @@
 import fs from 'fs';
 import { EventEmitter } from 'events';
-import webtorrent from 'webtorrent';  /** @kremlin.native */
+import WebTorrent from 'webtorrent';  /** @kremlin.native */
 import fileSize from 'file-size';
 // @ts-ignore
 import { wlog, werr } from './logging.ls';
 
 
 class TorrentClient extends EventEmitter {
-    wt: any /* WebTorrent */
+    wt: WebTorrent.Instance
     torrent: any
 
     options = {moovSize: 6e6}
-    wtOptions = {path: "/tmp/Web.Cinema"}
+    wtOptions = {path: "/tmp/Web.Cinema", announce: TorrentClient.TRACKERS}
 
     constructor() {
         super();
-        this.wt = new webtorrent();
-        this.wt.on('error', err => werr (err.message || err));
+        this.wt = new WebTorrent();
+        this.wt.on('error', err => werr (err instanceof Error ? err.message : err));
         window.addEventListener('beforeunload', () => this.wt.destroy());
     }
 
@@ -115,6 +115,29 @@ namespace TorrentClient {
     export type OpenOptions = {
     }
 
+    // From trackerlist
+    export const TRACKERS = [
+        'udp://tracker.opentrackr.org:1337/announce',
+        'udp://open.tracker.cl:1337/announce',
+        'udp://open.demonii.com:1337/announce',
+        'udp://open.stealth.si:80/announce',
+        'udp://tracker.torrent.eu.org:451/announce',
+        'udp://exodus.desync.com:6969/announce',
+        'udp://tracker.tiny-vps.com:6969/announce',
+        'udp://explodie.org:6969/announce',
+        'udp://tracker1.bt.moack.co.kr:80/announce',
+        'udp://tracker.theoks.net:6969/announce',
+        'udp://tracker.dler.org:6969/announce',
+        'udp://tracker.0x7c0.com:6969/announce',
+        'udp://tracker-udp.gbitt.info:80/announce',
+        'udp://run.publictracker.xyz:6969/announce',
+        'udp://retracker01-msk-virt.corbina.net:80/announce',
+        'udp://opentracker.io:6969/announce',
+        'udp://oh.fuuuuuck.com:6969/announce',
+        'https://tracker.tamersunion.org:443/announce',
+        'udp://wepzone.net:6969/announce',
+        'udp://ttk2.nbaonlineservice.com:6969/announce'
+    ]
 }
 
 
