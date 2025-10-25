@@ -1,8 +1,9 @@
 {
-  "name": "Web.Cinema",
+  "name": "web-cinema",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "build/kremlin/index.html",
+  "node-main": "startup.js",
   "browser": {
     "mass-confusion": true,
     "utp-native": true
@@ -20,12 +21,13 @@
     "subtitles-parser": "^0.0.2",
     "utp-native": "^2.2.2",
     "vue": "^3.2.45",
-    "webtorrent": "^2.4.15"
+    "webtorrent": "^2.8.4"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
     "@types/webtorrent": "^0.109.8"
   },
+  "chromium-args": "--enable-features=NWESM",
   "license": "MIT",
   "app": {
     "icon": "ui/img/Icon.icns"

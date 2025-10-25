@@ -1,6 +1,8 @@
 import fs from 'fs';
 import { EventEmitter } from 'events';
-import WebTorrent from 'webtorrent';  /** @kremlin.native */
+import type WebTorrent from 'webtorrent';
+// @ts-ignore
+import { default as webtorrentBridge } from 'webtorrent-bridge.js'; /** @kremlin.native */
 import fileSize from 'file-size';
 // @ts-ignore
 import { wlog, werr } from './logging.ls';
@@ -15,9 +17,12 @@ class TorrentClient extends EventEmitter {
 
     constructor() {
         super();
-        this.wt = new WebTorrent();
-        this.wt.on('error', err => werr (err instanceof Error ? err.message : err));
-        window.addEventListener('beforeunload', () => this.wt.destroy());
+        (async () => {
+            const WebTorrent = await webtorrentBridge();
+            this.wt = new WebTorrent();
+            this.wt.on('error', err => werr (err instanceof Error ? err.message : err));
+            window.addEventListener('beforeunload', () => this.wt.destroy());
+        })();
     }
 
     open(torrentId: string, options: TorrentClient.OpenOptions = {}) {
