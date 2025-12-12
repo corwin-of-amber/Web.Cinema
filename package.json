@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
-    "@types/webtorrent": "^0.109.8"
+    "@types/webtorrent": "^0.110.1"
   },
   "chromium-args": "--enable-features=NWESM",
   "license": "MIT",

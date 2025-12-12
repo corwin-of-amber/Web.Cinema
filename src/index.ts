@@ -45,6 +45,9 @@ function main() {
                 case 'movie':
                     new IINAVideoPlayer().play('/tmp/Web.Cinema/stream');
                     break;
+                case 'serve':
+                    console.log('server', c.serve());
+                    break;
                 case 'history-add':
                     let entry = selectedEntry();
                     if (entry)

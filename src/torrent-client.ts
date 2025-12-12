@@ -3,14 +3,40 @@ import { EventEmitter } from 'events';
 import type WebTorrent from 'webtorrent';
 // @ts-ignore
 import { default as webtorrentBridge } from 'webtorrent-bridge.js'; /** @kremlin.native */
+import { NodeServer } from 'webtorrent/lib/server';  /** @kremlin.native */
 import fileSize from 'file-size';
 // @ts-ignore
 import { wlog, werr } from './logging.ls';
+import { TorrentFile } from 'webtorrent';
+
+declare class NodeServer {
+    constructor(...a: any[])
+    listen(port: number): void
+    close(): void
+    onRequest(req, cb): void
+    static serveFile(file: TorrentFile, req: any, opts?: any): any
+}
+
+declare function selectedFile(): TorrentFile
+
+class ShareServer extends NodeServer {
+
+    async onRequest (req, cb) {
+        console.log(req);
+
+        if (req.url === '/w/0') {
+            cb(ShareServer.serveFile(selectedFile(), req, {headers: {}}));
+        }
+        super.onRequest(req, cb);
+    }
+
+}
 
 
 class TorrentClient extends EventEmitter {
     wt: WebTorrent.Instance
     torrent: any
+    WT: any
 
     options = {moovSize: 6e6}
     wtOptions = {path: "/tmp/Web.Cinema", announce: TorrentClient.TRACKERS}
@@ -23,6 +49,13 @@ class TorrentClient extends EventEmitter {
             this.wt.on('error', err => werr (err instanceof Error ? err.message : err));
             window.addEventListener('beforeunload', () => this.wt.destroy());
         })();
+    }
+
+    serve() {
+        let s = new ShareServer(this.wt, {pathname: '/w'});
+        s.listen(2000);
+        window.addEventListener('beforeunload', () => s.close());
+        return s;
     }
 
     open(torrentId: string, options: TorrentClient.OpenOptions = {}) {
