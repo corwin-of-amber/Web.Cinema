@@ -9,23 +9,21 @@ import fileSize from 'file-size';
 import { wlog, werr } from './logging.ls';
 import { TorrentFile } from 'webtorrent';
 
-declare class NodeServer {
-    constructor(...a: any[])
-    listen(port: number): void
-    close(): void
-    onRequest(req, cb): void
-    static serveFile(file: TorrentFile, req: any, opts?: any): any
-}
-
-declare function selectedFile(): TorrentFile
 
 class ShareServer extends NodeServer {
+
+    whichFile?: () => TorrentFile
+
+    withWhichFile(whichFile: typeof this.whichFile) {
+        this.whichFile = whichFile;
+        return this;
+    }
 
     async onRequest (req, cb) {
         console.log(req);
 
         if (req.url === '/w/0') {
-            cb(ShareServer.serveFile(selectedFile(), req, {headers: {}}));
+            cb(ShareServer.serveFile(this.whichFile(), req, {headers: {}}));
         }
         super.onRequest(req, cb);
     }
@@ -51,8 +49,9 @@ class TorrentClient extends EventEmitter {
         })();
     }
 
-    serve() {
-        let s = new ShareServer(this.wt, {pathname: '/w'});
+    serve(whichFile: () => TorrentFile) {
+        let s = new ShareServer(this.wt, {pathname: '/w'})
+            .withWhichFile(whichFile);
         s.listen(2000);
         window.addEventListener('beforeunload', () => s.close());
         return s;
