@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es2019",
+        "target": "es2022",
+        "module": "es2022",
         "moduleResolution": "node",
-        "lib": ["es2020", "dom", "WebWorker"],
+        "lib": ["es2022", "dom", "WebWorker"],
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "downlevelIteration": true,
